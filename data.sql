@@ -3,7 +3,7 @@ CREATE DATABASE employee_db;
 USE employee_db;
 
 CREATE TABLE departments (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    department_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL
 );
 
@@ -14,38 +14,39 @@ VALUES ('Sales'),
     ('Legal');
 
 CREATE TABLE roles (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    role_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     role VARCHAR(50) NOT NULL,
     salary INT NOT NULL,
-    department VARCHAR(50) NOT NULL,
-    FOREIGN KEY (department) REFERENCES departments(name) ON DELETE SET NULL
+    department_id INT NOT NULL,
+    FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
 
-INSERT INTO roles (role, salary, department)
-VALUES ('Sales Lead', 100000, 'Sales'),
-    ('Salesperson', 80000, 'Sales'),
-    ('Lead Engineer', 150000, 'Engineering'),
-    ('Software Engineer', 12000, 'Engineering'),
-    ('Account Manager', 160000, 'Finance'),
-    ('Accountant', 125000, 'Finance'),
-    ('Legal Team Lead', 250000, 'Legal'),
-    ('Lawyer', 190000, 'Legal');
+INSERT INTO roles (role, salary, department_id)
+VALUES ('Sales Lead', 100000, 1),
+    ('Salesperson', 80000, 1),
+    ('Lead Engineer', 150000, 2),
+    ('Software Engineer', 12000, 2),
+    ('Account Manager', 160000, 3),
+    ('Accountant', 125000, 3),
+    ('Legal Team Lead', 250000, 4),
+    ('Lawyer', 190000, 4);
 
 CREATE TABLE employees (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    title VARCHAR(50) NOT NULL,
+    role_id INT NOT NULL,
     manager VARCHAR(50),
-    FOREIGN KEY (title) REFERENCES roles(role) ON DELETE SET NULL
+    FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
-INSERT INTO employees (first_name, last_name, title, manager)
-VALUES ('John', 'Doe', 'Sales Lead', null),
-    ('Mike', 'Chan', 'Salesperson', 'John Doe'),
-    ('Ashley', 'Rodriguez', 'Lead Engineer', null),
-    ('Kevin', 'Tupik', 'Software Engineer', 'Ashley Rodriguez'),
-    ('Kunal', 'Singh', 'Account Manager', null),
-    ('Malia', 'Brown', 'Accountant', 'Kunal Singh'),
-    ('Sarah', 'Lourd', 'Legal Team Lead', null),
-    ('Tom', 'Allen', 'Lawyer', 'Sarah Lourd');
+INSERT INTO employees (first_name, last_name, role_id, manager)
+VALUES ('John', 'Doe', 1, null),
+    ('Mike', 'Chan', 2, 'John Doe'),
+    ('Ashley', 'Rodriguez', 3, null),
+    ('Kevin', 'Tupik', 4, 'Ashley Rodriguez'),
+    ('Kunal', 'Singh', 5, null),
+    ('Malia', 'Brown', 6, 'Kunal Singh'),
+    ('Sarah', 'Lourd', 7, null),
+    ('Tom', 'Allen', 8, 'Sarah Lourd');
+

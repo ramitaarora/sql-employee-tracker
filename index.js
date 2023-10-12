@@ -3,7 +3,16 @@ let inquirer = require('inquirer');
 // Function to start questions
 
 function init() {
-    console.log('Employee Manager');
+    console.log(`
+    
+    ,________________________,
+    |                        |
+    |                        |
+    |    Employee Manager    |
+    |                        |
+    |________________________|
+
+    `);
     inquirer.prompt([
         {
             type: 'list',
@@ -19,3 +28,4 @@ function init() {
 // Function call to initialize app
 
 init();
+
