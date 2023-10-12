@@ -7,7 +7,7 @@ const db = mysql.createConnection(
       // MySQL username,
       user: 'root',
       // MySQL password
-      password: '',
+      password: 'RamitaSQL',
       database: 'employee_db'
     },
     console.log(`Connected to the employee_db database.`)
@@ -17,9 +17,10 @@ const db = mysql.createConnection(
 
 function viewEmployees() {
     db.query(`SELECT * FROM employees`, function (err, res) {
+        console.log('')
         console.table(res);
+        menu();
     });
-    menu();
 }
 
 function addEmployee() {
@@ -48,33 +49,82 @@ function addEmployee() {
         }
     ]).then((answers) => {
         console.log(answers);
+        menu();
     })
 }
 
 function updateEmployeeRole() {
-
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: 'Please choose an employee: ',
+            choices: [],
+            name: 'employee',
+        },
+        {
+            type: 'list',
+            message: 'Please select a new role: ',
+            choices: [],
+            name: 'role',
+        }
+    ]).then((answers) => {
+        console.log(answers);
+        menu();
+    })
 }
 
 function viewRoles() {
     db.query(`SELECT * FROM roles`, function (err, res) {
+        console.log('');
         console.table(res);
+        menu();
     });
-    menu();
+    
 }
 
 function addRole() {
-
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'Please enter the name of the new role: ',
+            name: 'newRole',
+        },
+        {
+            type: 'input',
+            message: 'Please enter the salary of the new role: ',
+            name: 'newSalary',
+        },
+        {
+            type: 'list',
+            message: 'Please select the department: ',
+            choices: [],
+            name: 'department',
+        }
+    ]).then((answers) => {
+        console.log(answers);
+        menu();
+    })
 }
 
 function viewDepartments() {
     db.query(`SELECT * FROM departments`, function (err, res) {
+        console.log('');
         console.table(res);
+        menu();
     });
-    menu();
 }
 
 function addDepartment() {
-
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'Please enter the name of the new department: ',
+            name: 'newDepartment',
+        },
+    ]).then((answers) => {
+        console.log(answers);
+        menu();
+    })
 }
 
 
