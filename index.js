@@ -13,6 +13,7 @@ const db = mysql.createConnection(
     console.log(`Connected to the employee_db database.`)
   );
 
+
 // Table functions
 
 function viewEmployees() {
@@ -24,46 +25,107 @@ function viewEmployees() {
 }
 
 function addEmployee() {
+    let roleChoices = [];
+    db.query(`SELECT role FROM roles`, function (err, results) {
+        for (let i=0; i < results.length; i++) {
+            roleChoices.push(results[i].role);
+        }
+    });
+
+    let managerChoices = [];
+    db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
+        for (let i=0; i < results.length; i++) {
+            managerChoices.push(results[i].name);
+        } managerChoices.push('None');
+    });
+
     inquirer.prompt([
         {
             type: 'input',
-            message: "Please enter the employee's first name: ",
-            name: firstName,
+            message: "Please enter the employee's first name:",
+            name: 'firstName',
         },
         {
             type: 'input',
-            message: "Please enter the employee's last name: ",
-            name: lastName,
+            message: "Please enter the employee's last name:",
+            name: 'lastName',
         },
         {
             type: 'list',
-            message: 'Please choose a role for the employee: ',
-            choices: [],
+            message: 'Please choose a role for the employee:',
+            choices: roleChoices,
             name: 'role',
         },
         {
             type: 'list',
-            message: 'Please select a manager: ',
-            choices: [],
+            message: 'Please select a manager:',
+            choices: managerChoices,
             name: 'manager',
         }
     ]).then((answers) => {
-        console.log(answers);
-        menu();
-    })
-}
+
+        function getRoleID() {
+            var roleID;
+            db.query(`SELECT role_id FROM roles WHERE role='${answers.role}'`, function (err, res) {
+                if (err) console.log(err);
+                else { 
+                    roleID = res[0].role_id;
+                    // console.log("role ID", roleID);
+                    getManagerID(roleID)
+                }
+            })
+            
+        }
+        
+        function getManagerID(roleID) {
+            var managerID;
+            if (answers.manager != 'None') {
+                let nameArray = answers.manager.split(' ');
+                let firstName = nameArray[0];
+                let lastName = nameArray[1];
+    
+                db.query(`SELECT employee_id AS id FROM employees WHERE first_name ='${firstName}' AND last_name='${lastName}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        managerID = res[0].id;
+                        writeQuery(roleID, managerID);
+                    }
+                })
+            } else {
+                managerID = null;
+                writeQuery(roleID, managerID);
+            }
+            
+        }
+
+        function writeQuery(roleID, managerID) {
+            db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id)
+            VALUES ('${answers.firstName}', '${answers.lastName}', ${roleID}, ${managerID}) `, function (err, res) {
+                if (err) console.log(err);
+                else { 
+                    console.log(res);
+                    menu();
+                }
+            })
+        
+        }
+        
+        getRoleID();
+})}
+
+addEmployee();
 
 function updateEmployeeRole() {
     inquirer.prompt([
         {
             type: 'list',
-            message: 'Please choose an employee: ',
+            message: 'Please choose an employee:',
             choices: [],
             name: 'employee',
         },
         {
             type: 'list',
-            message: 'Please select a new role: ',
+            message: 'Please select a new role:',
             choices: [],
             name: 'role',
         }
@@ -86,17 +148,17 @@ function addRole() {
     inquirer.prompt([
         {
             type: 'input',
-            message: 'Please enter the name of the new role: ',
+            message: 'Please enter the name of the new role:',
             name: 'newRole',
         },
         {
             type: 'input',
-            message: 'Please enter the salary of the new role: ',
+            message: 'Please enter the salary of the new role:',
             name: 'newSalary',
         },
         {
             type: 'list',
-            message: 'Please select the department: ',
+            message: 'Please select the department:',
             choices: [],
             name: 'department',
         }
@@ -118,7 +180,7 @@ function addDepartment() {
     inquirer.prompt([
         {
             type: 'input',
-            message: 'Please enter the name of the new department: ',
+            message: 'Please enter the name of the new department:',
             name: 'newDepartment',
         },
     ]).then((answers) => {
@@ -168,5 +230,5 @@ function init() {
 
 // Function call to initialize app
 
-init();
+// init();
 

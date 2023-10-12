@@ -36,17 +36,17 @@ CREATE TABLE employees (
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     role_id INT NOT NULL,
-    manager VARCHAR(50),
-    FOREIGN KEY (role_id) REFERENCES roles(role_id)
+    manager_id INT,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id),
+    FOREIGN KEY (manager_id) REFERENCES employees (employee_id)
 );
 
-INSERT INTO employees (first_name, last_name, role_id, manager)
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
 VALUES ('John', 'Doe', 1, null),
-    ('Mike', 'Chan', 2, 'John Doe'),
+    ('Mike', 'Chan', 2, 1),
     ('Ashley', 'Rodriguez', 3, null),
-    ('Kevin', 'Tupik', 4, 'Ashley Rodriguez'),
+    ('Kevin', 'Tupik', 4, 3),
     ('Kunal', 'Singh', 5, null),
-    ('Malia', 'Brown', 6, 'Kunal Singh'),
+    ('Malia', 'Brown', 6, 5),
     ('Sarah', 'Lourd', 7, null),
-    ('Tom', 'Allen', 8, 'Sarah Lourd');
-
+    ('Tom', 'Allen', 8, 7);
