@@ -18,9 +18,13 @@ const db = mysql.createConnection(
 
 function viewEmployees() {
     db.query(`SELECT * FROM employees`, function (err, res) {
-        console.log('')
-        console.table(res);
-        menu();
+        if (err) console.log(err);
+        else {
+            console.log('')
+            console.table(res);
+            menu();
+        }
+        
     });
 }
 
@@ -34,9 +38,13 @@ function addEmployee() {
 
     let managerChoices = [];
     db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
-        for (let i=0; i < results.length; i++) {
-            managerChoices.push(results[i].name);
-        } managerChoices.push('None');
+        if (err) console.log(err);
+        else {
+            for (let i=0; i < results.length; i++) {
+                managerChoices.push(results[i].name);
+            } managerChoices.push('None');
+        }
+        
     });
 
     inquirer.prompt([
@@ -118,17 +126,22 @@ function updateEmployeeRole() {
     function getChoices() {
         let employeeChoices = [];
         db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
-            for (let i=0; i < results.length; i++) {
-                employeeChoices.push(results[i].name);
-            } employeeChoices.push('None');
-        
-        
+            if (err) console.log(err);
+            else {
+                for (let i=0; i < results.length; i++) {
+                    employeeChoices.push(results[i].name);
+                } employeeChoices.push('None');
+            }
+            
             let roleChoices = [];
             db.query(`SELECT role FROM roles`, function (err, results) {
-                for (let i=0; i < results.length; i++) {
-                    roleChoices.push(results[i].role);
-                }  
-                    startPrompts(employeeChoices, roleChoices)
+                if (err) console.log(err);
+                else {
+                    for (let i=0; i < results.length; i++) {
+                        roleChoices.push(results[i].role);
+                    }  
+                        startPrompts(employeeChoices, roleChoices)
+                }
             }); 
         });
     }
@@ -151,7 +164,6 @@ function updateEmployeeRole() {
                 name: 'role',
             }
         ]).then((answers) => {
-            console.log(answers);
 
             function getRoleID() {
                 var roleID;
@@ -159,7 +171,6 @@ function updateEmployeeRole() {
                     if (err) console.log(err);
                     else { 
                         roleID = res[0].role_id;
-                        // console.log("role ID", roleID);
                         getEmployeeID(roleID)
                     }
                 })
@@ -194,7 +205,7 @@ function updateEmployeeRole() {
                 WHERE employee_id=${employeeID};`, function (err, res) {
                     if (err) console.log(err);
                     else { 
-                        console.log(res);
+                        console.log('Updated employee role!');
                         menu();
                     }
                 })
@@ -207,9 +218,12 @@ function updateEmployeeRole() {
 
 function viewRoles() {
     db.query(`SELECT * FROM roles`, function (err, res) {
-        console.log('');
-        console.table(res);
-        menu();
+        if (err) console.log(err);
+        else {
+            console.log('');
+            console.table(res);
+            menu();
+        }
     });
     
 }
@@ -217,10 +231,14 @@ function viewRoles() {
 function addRole() {
     let departmentChoices = [];
     db.query(`SELECT name FROM departments`, function (err, results) {
-        for (let i=0; i < results.length; i++) {
-            departmentChoices.push(results[i].name);
-        } 
+        if (err) console.log(err);
+        else {
+            for (let i=0; i < results.length; i++) {
+                departmentChoices.push(results[i].name);
+            } 
             startPrompts();
+        }
+        
     });
 
     function startPrompts() {
@@ -242,7 +260,6 @@ function addRole() {
                 name: 'department',
             }
         ]).then((answers) => {
-            // console.log(answers);
             let departmentID;
             db.query(`SELECT department_id FROM departments WHERE name='${answers.department}'`, function (err, results) {
                 if (err) console.log(err);
@@ -267,9 +284,12 @@ function addRole() {
 
 function viewDepartments() {
     db.query(`SELECT * FROM departments`, function (err, res) {
-        console.log('');
-        console.table(res);
-        menu();
+        if (err) console.log(err);
+        else {
+            console.log('');
+            console.table(res);
+            menu();
+        } 
     });
 }
 
