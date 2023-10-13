@@ -281,11 +281,15 @@ function addDepartment() {
             name: 'newDepartment',
         },
     ]).then((answers) => {
-        console.log(answers);
-        menu();
+        db.query(`INSERT INTO departments (name) VALUES ('${answers.newDepartment}')`, function (err, results) {
+            if (err) console.log(err);
+            else console.log('Department added!');
+            menu();
+        })
+
+        
     })
 }
-
 
 // Menu function
 
