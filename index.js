@@ -219,31 +219,50 @@ function addRole() {
     db.query(`SELECT name FROM departments`, function (err, results) {
         for (let i=0; i < results.length; i++) {
             departmentChoices.push(results[i].name);
-        }
+        } 
+            startPrompts();
     });
 
+    function startPrompts() {
+        inquirer.prompt([
+            {
+                type: 'input',
+                message: 'Please enter the name of the new role:',
+                name: 'newRole',
+            },
+            {
+                type: 'input',
+                message: 'Please enter the salary of the new role:',
+                name: 'newSalary',
+            },
+            {
+                type: 'list',
+                message: 'Please select the department:',
+                choices: departmentChoices,
+                name: 'department',
+            }
+        ]).then((answers) => {
+            // console.log(answers);
+            let departmentID;
+            db.query(`SELECT department_id FROM departments WHERE name='${answers.department}'`, function (err, results) {
+                if (err) console.log(err);
+                departmentID = results[0].department_id;
+                writeQuery();
+            })
 
-    inquirer.prompt([
-        {
-            type: 'input',
-            message: 'Please enter the name of the new role:',
-            name: 'newRole',
-        },
-        {
-            type: 'input',
-            message: 'Please enter the salary of the new role:',
-            name: 'newSalary',
-        },
-        {
-            type: 'list',
-            message: 'Please select the department:',
-            choices: departmentChoices,
-            name: 'department',
-        }
-    ]).then((answers) => {
-        console.log(answers);
-        menu();
-    })
+            function writeQuery() {
+                db.query(`INSERT INTO roles (role, salary, department_id)
+                    VALUES ('${answers.newRole}', ${answers.newSalary}, ${departmentID});`, function (err, results) {
+                        if (err) console.log(err);
+                        else {
+                            console.log('Role added!');
+                        }
+                        menu();
+                    })
+            }
+        })
+    }
+    
 }
 
 function viewDepartments() {
