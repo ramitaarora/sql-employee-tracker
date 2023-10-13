@@ -113,26 +113,96 @@ function addEmployee() {
         getRoleID();
 })}
 
-addEmployee();
-
 function updateEmployeeRole() {
-    inquirer.prompt([
-        {
-            type: 'list',
-            message: 'Please choose an employee:',
-            choices: [],
-            name: 'employee',
-        },
-        {
-            type: 'list',
-            message: 'Please select a new role:',
-            choices: [],
-            name: 'role',
-        }
-    ]).then((answers) => {
-        console.log(answers);
-        menu();
-    })
+
+    function getChoices() {
+        let employeeChoices = [];
+        db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
+            for (let i=0; i < results.length; i++) {
+                employeeChoices.push(results[i].name);
+            } employeeChoices.push('None');
+        
+        
+            let roleChoices = [];
+            db.query(`SELECT role FROM roles`, function (err, results) {
+                for (let i=0; i < results.length; i++) {
+                    roleChoices.push(results[i].role);
+                }  
+                    startPrompts(employeeChoices, roleChoices)
+            }); 
+        });
+    }
+
+    getChoices();
+    
+    function startPrompts(employeeChoices, roleChoices) {
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: 'Please choose an employee:',
+                choices: employeeChoices,
+                name: 'employee',
+            },
+            {
+                type: 'list',
+                message: 'Please select a new role:',
+                choices: roleChoices,
+                name: 'role',
+            }
+        ]).then((answers) => {
+            console.log(answers);
+
+            function getRoleID() {
+                var roleID;
+                db.query(`SELECT role_id FROM roles WHERE role='${answers.role}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        roleID = res[0].role_id;
+                        // console.log("role ID", roleID);
+                        getEmployeeID(roleID)
+                    }
+                })
+                
+            }
+
+            function getEmployeeID(roleID) {
+                var employeeID;
+                if (answers.employee != 'None') {
+                    let nameArray = answers.employee.split(' ');
+                    let firstName = nameArray[0];
+                    let lastName = nameArray[1];
+        
+                    db.query(`SELECT employee_id AS id FROM employees 
+                    WHERE first_name ='${firstName}' AND last_name='${lastName}'`, function (err, res) {
+                        if (err) console.log(err);
+                        else { 
+                            employeeID = res[0].id;
+                            writeQuery(roleID, employeeID);
+                        }
+                    })
+                } else {
+                    employeeID = null;
+                    writeQuery(roleID, employeeID);
+                }
+                
+            }
+
+            function writeQuery(roleID, employeeID) {
+                db.query(`UPDATE employees
+                set role_id=${roleID}
+                WHERE employee_id=${employeeID};`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        console.log(res);
+                        menu();
+                    }
+                })
+
+            }
+            getRoleID() 
+        })
+    }
 }
 
 function viewRoles() {
@@ -145,6 +215,14 @@ function viewRoles() {
 }
 
 function addRole() {
+    let departmentChoices = [];
+    db.query(`SELECT name FROM departments`, function (err, results) {
+        for (let i=0; i < results.length; i++) {
+            departmentChoices.push(results[i].name);
+        }
+    });
+
+
     inquirer.prompt([
         {
             type: 'input',
@@ -159,7 +237,7 @@ function addRole() {
         {
             type: 'list',
             message: 'Please select the department:',
-            choices: [],
+            choices: departmentChoices,
             name: 'department',
         }
     ]).then((answers) => {
@@ -230,5 +308,5 @@ function init() {
 
 // Function call to initialize app
 
-// init();
+init();
 
