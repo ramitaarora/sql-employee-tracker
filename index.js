@@ -111,7 +111,7 @@ function addEmployee() {
             VALUES ('${answers.firstName}', '${answers.lastName}', ${roleID}, ${managerID}) `, function (err, res) {
                 if (err) console.log(err);
                 else { 
-                    console.log(res);
+                    console.log('Employee added!');
                     menu();
                 }
             })
@@ -235,7 +235,7 @@ function addRole() {
         else {
             for (let i=0; i < results.length; i++) {
                 departmentChoices.push(results[i].name);
-            } 
+            }
             startPrompts();
         }
         
@@ -306,8 +306,6 @@ function addDepartment() {
             else console.log('Department added!');
             menu();
         })
-
-        
     })
 }
 
@@ -326,9 +324,9 @@ function menu() {
             if (choice.menuChoice === 'Add Employee') addEmployee();
             if (choice.menuChoice === 'Update Employee Role') updateEmployeeRole();
             if (choice.menuChoice === 'View All Roles') viewRoles();
-            if (choice.menuChoice === 'Add role') addRole();
+            if (choice.menuChoice === 'Add Role') addRole();
             if (choice.menuChoice === 'View All Departments') viewDepartments();
-            if (choice.menuChoice === 'Add Departments') addDepartment();
+            if (choice.menuChoice === 'Add Department') addDepartment();
             if (choice.menuChoice === 'Quit') process.exit();
         });
 }
