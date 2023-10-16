@@ -562,6 +562,136 @@ function viewBudget() {
     });
 }
 
+function viewByDepartment() {
+    function getChoices() {
+        let departmentChoices = [];
+        db.query(`SELECT name FROM departments`, function (err, results) {
+            if (err) console.log(err);
+            else {
+                for (let i=0; i < results.length; i++) {
+                    departmentChoices.push(results[i].name);
+                } startPrompts(departmentChoices);
+            }
+        });
+    } getChoices();
+
+    function startPrompts(departmentChoices) {
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: 'Please choose a department to view employees:',
+                choices: departmentChoices,
+                name: 'department',
+            }
+        ]).then((answers) => {
+
+            function getDepartmentID() {
+                var departmentID;
+                db.query(`SELECT department_id FROM departments WHERE name='${answers.department}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        departmentID = res[0].department_id;
+                        viewTable(departmentID)
+                    }
+                })
+            }
+
+            function viewTable(departmentID) {
+                db.query(`SELECT CONCAT(e.first_name, ' ', e.last_name) AS 'name', d.name AS 'department'
+                    FROM employees e
+                    JOIN roles r ON e.role_id = r.role_id
+                    JOIN departments d ON d.department_id = r.department_id
+                    WHERE d.department_id = ${departmentID}`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        console.log('');
+                        console.table(res);
+                        menu();
+                    }
+                })
+            }
+
+            getDepartmentID();
+        })
+    }
+}
+
+function viewByManager() {
+
+    function getManagers(managerIDs) {
+        let managerChoices = [];
+        for (let i=0; i < managerIDs.length; i++) {
+            db.query(`SELECT CONCAT(first_name, ' ', last_name) AS 'name' FROM employees WHERE employee_id = ${managerIDs[i]} `, function(err, results) {
+                if (err) console.log(err);
+                else {
+                    managerChoices.push(results[0].name);
+                } 
+            });
+        } startPrompts(managerChoices);
+    }
+
+    function getManagerID() {
+        let managerIDs = [];
+        db.query(`SELECT manager_id FROM employees WHERE manager_id IS NOT NULL`, function (err, results) {
+            if (err) console.log(err);
+            else {
+                for (let i=0; i < results.length; i++) {
+                    managerIDs.push(results[i].manager_id);
+                } getManagers(managerIDs);
+            }
+        });
+    }
+    
+    getManagerID()
+
+    function startPrompts(managerChoices) {
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: 'Please choose a manager to view their employees:',
+                choices: managerChoices,
+                name: 'manager',
+            }
+        ]).then((answers) => {
+
+            function getManagerID() {
+                var managerID;
+
+                let nameArray = answers.manager.split(' ');
+                let firstName = nameArray[0];
+                let lastName = nameArray[1];
+
+                db.query(`SELECT employee_id AS id FROM employees 
+                WHERE first_name ='${firstName}' AND last_name='${lastName}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        managerID = res[0].id;
+                        viewTable(managerID);
+                    }
+                })  
+            }
+
+            function viewTable(managerID) {
+                db.query(`SELECT CONCAT(e.first_name, ' ', e.last_name) AS 'name', CONCAT(m.first_name, ' ', m.last_name) AS 'manager'
+                FROM employees e
+                LEFT JOIN employees m ON e.manager_id = m.employee_id
+                WHERE e.manager_id = ${managerID}`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        console.log('');
+                        console.table(res);
+                        menu();
+                    }
+                })
+            }
+
+            getManagerID();
+        })
+    }
+}
+
 // Menu function
 
 function menu() {
@@ -569,7 +699,7 @@ function menu() {
         {
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'View Utilized Budget', 'Delete Department', 'Delete Employee', 'Delete Role', 'Quit'],
+            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'View Utilized Budget', 'View Employees by Department', 'View Employees by Manager', 'Delete Department', 'Delete Employee', 'Delete Role', 'Quit'],
             name: 'menuChoice',
         }
     ]).then((choice) => {
@@ -580,6 +710,8 @@ function menu() {
             if (choice.menuChoice === 'Add Role') addRole();
             if (choice.menuChoice === 'View All Departments') viewDepartments();
             if (choice.menuChoice === 'Add Department') addDepartment();
+            if (choice.menuChoice === 'View Employees by Department') viewByDepartment();
+            if (choice.menuChoice === 'View Employees by Manager') viewByManager();
             if (choice.menuChoice === 'Update Manager') updateManager();
             if (choice.menuChoice === 'Delete Department') deleteDepartment();
             if (choice.menuChoice === 'Delete Employee') deleteEmployee();
