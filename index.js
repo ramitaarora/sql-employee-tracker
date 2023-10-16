@@ -17,7 +17,7 @@ const db = mysql.createConnection(
 // Table functions
 
 function viewEmployees() {
-    db.query(`SELECT e.employee_id, e.first_name, e.last_name, r.role AS 'title', r.salary, d.name AS 'department' 
+    db.query(`SELECT e.employee_id, e.first_name, e.last_name, r.role AS 'title', r.salary, d.name AS 'department', e.manager_id AS 'manager'
         FROM employees e
         JOIN roles r ON e.role_id = r.role_id
         JOIN departments d ON r.department_id = d.department_id
@@ -221,7 +221,9 @@ function updateEmployeeRole() {
 }
 
 function viewRoles() {
-    db.query(`SELECT * FROM roles`, function (err, res) {
+    db.query(`SELECT r.role_id, r.role AS 'title', d.name AS 'department', r.salary
+        FROM roles r
+        JOIN departments d ON r.department_id = d.department_id`, function (err, res) {
         if (err) console.log(err);
         else {
             console.log('');
