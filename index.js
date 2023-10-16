@@ -17,7 +17,11 @@ const db = mysql.createConnection(
 // Table functions
 
 function viewEmployees() {
-    db.query(`SELECT * FROM employees`, function (err, res) {
+    db.query(`SELECT e.employee_id, e.first_name, e.last_name, r.role AS 'title', r.salary, d.name AS 'department' 
+        FROM employees e
+        JOIN roles r ON e.role_id = r.role_id
+        JOIN departments d ON r.department_id = d.department_id
+        `, function (err, res) {
         if (err) console.log(err);
         else {
             console.log('')
@@ -309,6 +313,101 @@ function addDepartment() {
     })
 }
 
+function updateManager() {
+
+    function getChoices() {
+        let employeeChoices = [];
+        db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
+            if (err) console.log(err);
+            else {
+                for (let i=0; i < results.length; i++) {
+                    employeeChoices.push(results[i].name);
+                }
+            }
+            
+            let managerChoices = [];
+            db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employees`, function (err, results) {
+                if (err) console.log(err);
+                else {
+                    for (let i=0; i < results.length; i++) {
+                        managerChoices.push(results[i].name);
+                    }  
+                        startPrompts(employeeChoices, managerChoices)
+                }
+            }); 
+        });
+    }
+
+    getChoices();
+    
+    function startPrompts(employeeChoices, managerChoices) {
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: 'Please choose an employee:',
+                choices: employeeChoices,
+                name: 'employee',
+            },
+            {
+                type: 'list',
+                message: 'Please select a new manager for the employee:',
+                choices: managerChoices,
+                name: 'manager',
+            }
+        ]).then((answers) => {
+
+            function getEmployeeID() {
+                var employeeID;
+
+                let nameArray = answers.employee.split(' ');
+                let firstName = nameArray[0];
+                let lastName = nameArray[1];
+
+                db.query(`SELECT employee_id AS id FROM employees 
+                WHERE first_name ='${firstName}' AND last_name='${lastName}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        employeeID = res[0].id;
+                        getManagerID(employeeID);
+                    }
+                })  
+            }
+
+            function getManagerID(employeeID) {
+                var managerID;
+
+                let nameArray = answers.manager.split(' ');
+                let firstName = nameArray[0];
+                let lastName = nameArray[1];
+
+                db.query(`SELECT employee_id AS id FROM employees 
+                WHERE first_name ='${firstName}' AND last_name='${lastName}'`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        managerID = res[0].id;
+                        writeQuery(employeeID, managerID);
+                    }
+                })  
+            }
+
+            function writeQuery(employeeID, managerID) {
+                db.query(`UPDATE employees
+                set manager_id=${managerID}
+                WHERE employee_id=${employeeID};`, function (err, res) {
+                    if (err) console.log(err);
+                    else { 
+                        console.log('Updated manager!');
+                        menu();
+                    }
+                })
+
+            }
+            getEmployeeID() 
+        })
+    }
+}
+
 // Menu function
 
 function menu() {
@@ -316,7 +415,7 @@ function menu() {
         {
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
+            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'Quit'],
             name: 'menuChoice',
         }
     ]).then((choice) => {
@@ -327,6 +426,7 @@ function menu() {
             if (choice.menuChoice === 'Add Role') addRole();
             if (choice.menuChoice === 'View All Departments') viewDepartments();
             if (choice.menuChoice === 'Add Department') addDepartment();
+            if (choice.menuChoice === 'Update Manager') updateManager();
             if (choice.menuChoice === 'Quit') process.exit();
         });
 }
