@@ -547,7 +547,20 @@ function deleteRole() {
     }
 }
 
-
+function viewBudget() {
+    db.query(`SELECT d.name AS 'department', SUM(r.salary) AS 'total utilized budget'
+        FROM roles r
+        JOIN departments d
+        ON r.department_id = d.department_id
+        GROUP BY d.department_id`, function (err, res) {
+        if (err) console.log(err);
+        else {
+            console.log('');
+            console.table(res);
+            menu();
+        } 
+    });
+}
 
 // Menu function
 
@@ -556,7 +569,7 @@ function menu() {
         {
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'Delete Department', 'Delete Employee', 'Delete Role', 'Quit'],
+            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'View Utilized Budget', 'Delete Department', 'Delete Employee', 'Delete Role', 'Quit'],
             name: 'menuChoice',
         }
     ]).then((choice) => {
@@ -571,6 +584,7 @@ function menu() {
             if (choice.menuChoice === 'Delete Department') deleteDepartment();
             if (choice.menuChoice === 'Delete Employee') deleteEmployee();
             if (choice.menuChoice === 'Delete Role') deleteRole();
+            if (choice.menuChoice === 'View Utilized Budget') viewBudget();
             if (choice.menuChoice === 'Quit') process.exit();
         });
 }
