@@ -619,31 +619,47 @@ function viewByDepartment() {
 
 function viewByManager() {
 
-    function getManagers(managerIDs) {
-        let managerChoices = [];
-        for (let i=0; i < managerIDs.length; i++) {
-            db.query(`SELECT CONCAT(first_name, ' ', last_name) AS 'name' FROM employees WHERE employee_id = ${managerIDs[i]} `, function(err, results) {
-                if (err) console.log(err);
-                else {
-                    managerChoices.push(results[0].name);
-                } 
-            });
-        } startPrompts(managerChoices);
+    async function getChoices() {
+        let managerIDs = await getManagerID()
+        let managerChoices = await getManagers(managerIDs)
+        startPrompts(managerChoices);
     }
 
     function getManagerID() {
         let managerIDs = [];
-        db.query(`SELECT manager_id FROM employees WHERE manager_id IS NOT NULL`, function (err, results) {
-            if (err) console.log(err);
-            else {
-                for (let i=0; i < results.length; i++) {
-                    managerIDs.push(results[i].manager_id);
-                } getManagers(managerIDs);
-            }
-        });
+        return new Promise((res, rej) => {
+            db.query(`SELECT manager_id FROM employees WHERE manager_id IS NOT NULL`, function (err, results) {
+                if (err) console.log(err);
+                else {
+                    for (let i=0; i < results.length; i++) {
+                        managerIDs.push(results[i].manager_id);
+                    }
+                    res(managerIDs);
+                } 
+            });
+        })
+    }
+
+    function getManagers(managerIDs) {
+        let managerChoices = [];
+        let mIDs = `employee_id = ${managerIDs[0]}`
+        return new Promise((res, rej) => {
+            for (let i=1; i < managerIDs.length; i++) {
+                mIDs += ` OR employee_id = ${managerIDs[i]}`
+            } 
+                db.query(`SELECT CONCAT(first_name, ' ', last_name) AS 'name' FROM employees WHERE ${mIDs}`, function(err, results) {
+                    if (err) console.log(err);
+                    else {
+                        managerChoices = results.map(manager => manager.name);                    
+                        res(managerChoices);
+                    } 
+                }); 
+             
+        }) 
+        
     }
     
-    getManagerID()
+    getChoices();
 
     function startPrompts(managerChoices) {
 
@@ -699,7 +715,21 @@ function menu() {
         {
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Update Manager', 'View Utilized Budget', 'View Employees by Department', 'View Employees by Manager', 'Delete Department', 'Delete Employee', 'Delete Role', 'Quit'],
+            choices: ['View All Employees', 
+                'Add Employee', 
+                'Update Employee Role', 
+                'View All Roles', 
+                'Add Role', 
+                'View All Departments', 
+                'Add Department', 
+                'Update Manager', 
+                'View Utilized Budget', 
+                'View Employees by Department', 
+                'View Employees by Manager', 
+                'Delete Department', 
+                'Delete Employee', 
+                'Delete Role', 
+                'Quit'],
             name: 'menuChoice',
         }
     ]).then((choice) => {
