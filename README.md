@@ -22,6 +22,8 @@ To run, run `node index.js`.
 
 ## Usage
 
+A video can be viewed at: https://drive.google.com/file/d/1Sok48gTfKwx7gOI-2xPF7EhT7JwzkQGe/view.
+
 <img src="./assets/images/employee-tracker-screenshot.png" alt="screenshot"/>
 
 ## Credits
